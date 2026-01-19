@@ -1,0 +1,35 @@
+general: {
+    local_media_server = true
+    json = "indented"
+    user_agent = "ARCSIP-Janus/1.0"
+    hold_sdp = true
+    behind_nat = true
+    register_ttl = 300
+}
+
+registration: {
+    enabled = true
+    register_ttl = 300
+    retry_on_failure = true
+    retry_interval = 30
+    retry_attempts = 5
+}
+
+rtp: {
+    audio_codecs = "pcmu,pcma,opus,g722"
+    dtmf_mode = "rfc2833"
+}
+
+sip: {
+    contact_user = "janus"
+    allow_transfer = true
+    session_timer = 90
+    session_refresher = "uac"
+    max_call_duration = 0
+    sip_transport = "udp"
+    local_port = 5060
+}
+
+events: {
+    enable_events = true
+}

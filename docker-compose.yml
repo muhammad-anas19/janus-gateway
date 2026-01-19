@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  janus-gateway:
+    image: canyan/janus-gateway:latest
+    container_name: janus-gateway
+    restart: unless-stopped
+
+    # Port mappings
+    ports:
+      # HTTP/HTTPS API (optional, for admin)
+      - "8088:8088"
+      - "8089:8089"
+      # WebSocket (unsecured - for internal use or proxy)
+      - "8188:8188"
+      # Secure WebSocket (for production)
+      - "8989:8989"
+      # RTP media ports (UDP) - CRITICAL for audio
+      - "20000-20100:20000-20100/udp"
+      # SIP signaling
+      - "5060:5060/udp"
+      - "5060:5060/tcp"
+
+    # Mount configuration files
+    volumes:
+      - ./janus-config:/opt/janus/etc/janus:ro
+      - ./certs:/opt/janus/share/janus/certs:ro
+
+    # Environment variables
+    environment:
+      - JANUS_DEBUG_LEVEL=4
+
+    # Network mode for better NAT handling
+    # Use 'host' for simpler NAT traversal, or 'bridge' with proper port mapping
+    network_mode: bridge
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8088/janus/info"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

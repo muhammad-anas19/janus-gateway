@@ -1,0 +1,28 @@
+general: {
+    session_timeout = 60
+    reclaim_session_timeout = 30
+    debug_level = 4
+    debug_stdout = true
+}
+
+media: {
+    ipv6 = false
+    rtp_port_range = "20000-20100"
+}
+
+nat: {
+    # IMPORTANT: Set your public IP
+    public_ip = "YOUR_SERVER_PUBLIC_IP"
+
+    # Or use STUN for auto-detection
+    stun_server = "stun.l.google.com"
+    stun_port = 19302
+}
+
+plugins: {
+    # Only enable needed plugins
+}
+
+transports: {
+    # WebSocket transport is enabled separately
+}

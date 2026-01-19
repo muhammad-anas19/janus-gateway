@@ -1,0 +1,25 @@
+general: {
+    enabled = true
+
+    # Unsecured WebSocket (internal/testing only)
+    ws_port = 8188
+    ws_interface = "0.0.0.0"
+    ws_ip = "0.0.0.0"
+
+    # Secure WebSocket (PRODUCTION)
+    wss = true
+    wss_port = 8989
+    wss_interface = "0.0.0.0"
+    wss_ip = "0.0.0.0"
+
+    # SSL Certificates
+    cert_pem = "/opt/janus/share/janus/certs/cert.pem"
+    cert_key = "/opt/janus/share/janus/certs/key.pem"
+
+    # Keepalive
+    ws_ping_pong_interval = 30
+}
+
+admin: {
+    admin_ws = false
+}
