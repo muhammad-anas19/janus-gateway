@@ -7,7 +7,7 @@ general: {
     ws_ip = "0.0.0.0"
 
     # Secure WebSocket (PRODUCTION)
-    wss = true
+    wss = false
     wss_port = 8989
     wss_interface = "0.0.0.0"
     wss_ip = "0.0.0.0"
