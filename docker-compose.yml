@@ -30,8 +30,4 @@ services:
     environment:
       - JANUS_DEBUG_LEVEL=4
 
-    # Network mode for better NAT handling
-    # Use 'host' for simpler NAT traversal, or 'bridge' with proper port mapping
-    network_mode: bridge
-
     # Health check
