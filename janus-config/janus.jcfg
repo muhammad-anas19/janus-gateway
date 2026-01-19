@@ -11,9 +11,6 @@ media: {
 }
 
 nat: {
-    # IMPORTANT: Set your public IP
-    public_ip = "YOUR_SERVER_PUBLIC_IP"
-
     # Or use STUN for auto-detection
     stun_server = "stun.l.google.com"
     stun_port = 19302
