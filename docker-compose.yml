@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   janus-gateway:
@@ -9,12 +9,12 @@ services:
     # Port mappings
     ports:
       # HTTP/HTTPS API (optional, for admin)
-      - "8088:8088"
-      - "8089:8089"
+      # - "8088:8088"
+      # - "8089:8089"
       # WebSocket (unsecured - for internal use or proxy)
       - "8188:8188"
       # Secure WebSocket (for production)
-      - "8989:8989"
+      # - "8989:8989"
       # RTP media ports (UDP) - CRITICAL for audio
       - "20000-20100:20000-20100/udp"
       # SIP signaling
