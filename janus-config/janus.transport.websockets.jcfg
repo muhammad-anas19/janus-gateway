@@ -20,6 +20,13 @@ general: {
     ws_ping_pong_interval = 30
 }
 
+# CORS (Cross-Origin Resource Sharing) configuration
+cors: {
+	# Allow all origins (for development only!)
+	# For production, specify exact origins
+	allow_origin = "*"
+}
+
 admin: {
     admin_ws = false
 }
