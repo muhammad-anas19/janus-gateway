@@ -22,9 +22,8 @@ general: {
 
 # CORS (Cross-Origin Resource Sharing) configuration
 cors: {
-	# Allow all origins (for development only!)
-	# For production, specify exact origins
-	allow_origin = "*"
+	# Production: specify allowed origins
+	allow_origin = "https://dev-arcsip.coolify.arcsip.io,https://arcsip.io"
 }
 
 admin: {

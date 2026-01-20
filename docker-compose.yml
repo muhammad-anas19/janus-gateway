@@ -7,8 +7,19 @@ services:
     restart: unless-stopped
     labels:
         - "traefik.enable=true"
+        # Router configuration - HTTPS only
         - "traefik.http.routers.janus-gateway.rule=Host(`janus-gateway.coolify.arcsip.io`)"
+        - "traefik.http.routers.janus-gateway.entrypoints=https"
+        - "traefik.http.routers.janus-gateway.tls=true"
+        - "traefik.http.routers.janus-gateway.tls.certresolver=letsencrypt"
+        # Service configuration
         - "traefik.http.services.janus-gateway.loadbalancer.server.port=8188"
+        # HTTP to HTTPS redirect
+        - "traefik.http.routers.janus-gateway-http.rule=Host(`janus-gateway.coolify.arcsip.io`)"
+        - "traefik.http.routers.janus-gateway-http.entrypoints=http"
+        - "traefik.http.routers.janus-gateway-http.middlewares=redirect-to-https"
+        - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+        - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
 
     # Port mappings
     ports:
