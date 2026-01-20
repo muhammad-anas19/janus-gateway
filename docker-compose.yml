@@ -5,6 +5,10 @@ services:
     image: canyan/janus-gateway:latest
     container_name: janus-gateway
     restart: unless-stopped
+    labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.janus-gateway.rule=Host(`janus-gateway.coolify.arcsip.io`)"
+        - "traefik.http.services.janus-gateway.loadbalancer.server.port=8188"
 
     # Port mappings
     ports:
