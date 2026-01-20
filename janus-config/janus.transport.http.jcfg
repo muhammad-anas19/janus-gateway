@@ -1,0 +1,7 @@
+general: {
+	enabled = false
+}
+
+admin: {
+	admin_http = false
+}
