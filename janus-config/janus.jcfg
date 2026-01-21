@@ -16,26 +16,12 @@ nat: {
     stun_port = 19302
 
     # ========================================================================
-    # CRITICAL: NAT 1:1 MAPPING - REQUIRED FOR AUDIO TO WORK
+    # CRITICAL: NAT 1:1 MAPPING - Your server's PUBLIC IP
     # ========================================================================
-    # You MUST configure one of these options:
-    #
-    # OPTION 1: Use STUN to auto-discover public IP (works if server can reach STUN)
-    # nat_1_1_mapping = "stun:stun.l.google.com:19302"
-    #
-    # OPTION 2: Specify your server's public IP directly (more reliable)
-    # To find your public IP, run on your server: curl -s ifconfig.me
-    # Then replace the IP below with your server's actual public IP
-    # nat_1_1_mapping = "YOUR_PUBLIC_IP_HERE"
-    #
-    # IMPORTANT: The domain janus-gateway.coolify.arcsip.io resolves to your
-    # server's IP. You can also use: dig +short janus-gateway.coolify.arcsip.io
-    # ========================================================================
+    # This is the public IP that browsers will use to reach Janus for RTP media
+    nat_1_1_mapping = "5.78.103.238"
 
-    # Using STUN discovery (change to your public IP if this doesn't work)
-    nat_1_1_mapping = "stun:stun.l.google.com:19302"
-
-    # Don't include private IPs in ICE candidates (only public)
+    # Don't include private IPs in ICE candidates (only advertise public IP)
     keep_private_host = false
 
     # ICE-Lite mode - Janus acts as ICE-Lite agent (server-side)
@@ -45,7 +31,7 @@ nat: {
     full_trickle = true
 
     # Ignore Docker's internal network interfaces
-    ice_ignore_list = "docker0,br-"
+    ice_ignore_list = "docker0,br-,veth,lo"
 }
 
 plugins: {

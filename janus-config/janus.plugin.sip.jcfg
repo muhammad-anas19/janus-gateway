@@ -6,12 +6,14 @@ general: {
     behind_nat = true
     register_ttl = 300
 
-    # CRITICAL: These settings ensure proper NAT handling for SIP
-    # The SIP plugin will use STUN to discover its public IP for RTP
-    sdp_ip = "stun:stun.l.google.com:19302"
+    # ========================================================================
+    # CRITICAL: Public IP for SDP and RTP - Must match your server's public IP
+    # ========================================================================
+    # This IP will be advertised in SDP for media connections
+    sdp_ip = "5.78.103.238"
 
-    # Use the same STUN server to determine the external address for RTP
-    rtp_ip = "stun:stun.l.google.com:19302"
+    # This IP will be used for RTP media streams
+    rtp_ip = "5.78.103.238"
 }
 
 registration: {
