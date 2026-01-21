@@ -1,29 +1,21 @@
 general: {
-    enabled = true
+    json = "indented"
 
-    # Unsecured WebSocket (internal/testing only)
+    # Enable WebSocket server (required!)
+    ws = true
     ws_port = 8188
-    ws_interface = "0.0.0.0"
     ws_ip = "0.0.0.0"
 
-    # Secure WebSocket (PRODUCTION)
+    # Disable secure WebSocket (Traefik handles TLS termination)
     wss = false
-    wss_port = 8989
-    wss_interface = "0.0.0.0"
-    wss_ip = "0.0.0.0"
 
-    # SSL Certificates
-    cert_pem = "/opt/janus/share/janus/certs/cert.pem"
-    cert_key = "/opt/janus/share/janus/certs/key.pem"
-
-    # Keepalive
-    ws_ping_pong_interval = 30
+    # Logging
+    ws_logging = "err,warn"
 }
 
-# CORS (Cross-Origin Resource Sharing) configuration
+# CORS - Allow your frontend domains
 cors: {
-	# Production: specify allowed origins
-	allow_origin = "https://dev-arcsip.coolify.arcsip.io,https://arcsip.io"
+    allow_origin = "*"
 }
 
 admin: {
