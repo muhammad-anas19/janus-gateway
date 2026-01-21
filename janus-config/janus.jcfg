@@ -15,23 +15,37 @@ nat: {
     stun_server = "stun.l.google.com"
     stun_port = 19302
 
-    # CRITICAL: NAT 1:1 mapping - Janus must know its public IP
-    # Use "stun:stun.l.google.com:19302" for dynamic discovery
-    # Or specify the server's public IP directly if static
+    # ========================================================================
+    # CRITICAL: NAT 1:1 MAPPING - REQUIRED FOR AUDIO TO WORK
+    # ========================================================================
+    # You MUST configure one of these options:
+    #
+    # OPTION 1: Use STUN to auto-discover public IP (works if server can reach STUN)
+    # nat_1_1_mapping = "stun:stun.l.google.com:19302"
+    #
+    # OPTION 2: Specify your server's public IP directly (more reliable)
+    # To find your public IP, run on your server: curl -s ifconfig.me
+    # Then replace the IP below with your server's actual public IP
+    # nat_1_1_mapping = "YOUR_PUBLIC_IP_HERE"
+    #
+    # IMPORTANT: The domain janus-gateway.coolify.arcsip.io resolves to your
+    # server's IP. You can also use: dig +short janus-gateway.coolify.arcsip.io
+    # ========================================================================
+
+    # Using STUN discovery (change to your public IP if this doesn't work)
     nat_1_1_mapping = "stun:stun.l.google.com:19302"
 
-    # Keep the private host for local candidates as well
+    # Don't include private IPs in ICE candidates (only public)
     keep_private_host = false
 
-    # ICE-Lite mode - Janus acts as ICE-Lite agent
-    # This simplifies ICE negotiation when Janus is on a server
+    # ICE-Lite mode - Janus acts as ICE-Lite agent (server-side)
     ice_lite = true
 
-    # Ignore gathering of specific interface candidates (if needed)
-    # ice_ignore_list = "vmnet"
-
-    # Full ICE for better connectivity
+    # Full trickle for better ICE connectivity
     full_trickle = true
+
+    # Ignore Docker's internal network interfaces
+    ice_ignore_list = "docker0,br-"
 }
 
 plugins: {

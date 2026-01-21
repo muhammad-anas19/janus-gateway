@@ -21,16 +21,11 @@ services:
         - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
         - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
 
-    # Port mappings
+    # Port mappings - CRITICAL: Ensure firewall allows these ports
     ports:
-      # HTTP/HTTPS API (optional, for admin)
-      # - "8088:8088"
-      # - "8089:8089"
-      # WebSocket (unsecured - for internal use or proxy)
+      # WebSocket (proxied through Traefik for WSS)
       - "8188:8188"
-      # Secure WebSocket (for production)
-      # - "8989:8989"
-      # RTP media ports (UDP) - CRITICAL for audio
+      # RTP media ports (UDP) - MUST be open in firewall for audio to work
       - "20000-20100:20000-20100/udp"
       # SIP signaling
       - "5060:5060/udp"
