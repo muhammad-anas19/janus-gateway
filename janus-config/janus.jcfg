@@ -11,9 +11,27 @@ media: {
 }
 
 nat: {
-    # Or use STUN for auto-detection
+    # STUN server for ICE candidate gathering
     stun_server = "stun.l.google.com"
     stun_port = 19302
+
+    # CRITICAL: NAT 1:1 mapping - Janus must know its public IP
+    # Use "stun:stun.l.google.com:19302" for dynamic discovery
+    # Or specify the server's public IP directly if static
+    nat_1_1_mapping = "stun:stun.l.google.com:19302"
+
+    # Keep the private host for local candidates as well
+    keep_private_host = false
+
+    # ICE-Lite mode - Janus acts as ICE-Lite agent
+    # This simplifies ICE negotiation when Janus is on a server
+    ice_lite = true
+
+    # Ignore gathering of specific interface candidates (if needed)
+    # ice_ignore_list = "vmnet"
+
+    # Full ICE for better connectivity
+    full_trickle = true
 }
 
 plugins: {
