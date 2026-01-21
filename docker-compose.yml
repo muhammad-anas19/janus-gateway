@@ -2,7 +2,13 @@ version: "3.8"
 
 services:
   janus-gateway:
-    image: canyan/janus-gateway:latest
+    # Build from custom Dockerfile instead of using pre-built image
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PUBLIC_IP: "5.78.103.238"
+    image: arcsip-janus-gateway:latest
     container_name: janus-gateway
     restart: unless-stopped
     labels:
@@ -31,13 +37,14 @@ services:
       - "5060:5060/udp"
       - "5060:5060/tcp"
 
-    # Mount configuration files
-    volumes:
-      - ./janus-config:/opt/janus/etc/janus:ro
-      - ./certs:/opt/janus/share/janus/certs:ro
-
     # Environment variables
     environment:
       - JANUS_DEBUG_LEVEL=4
+      # CRITICAL: Your server's public IP for NAT traversal
+      - NAT_PUBLIC_IP=5.78.103.238
+
+    # Optional: Mount certs if using WSS directly (not through Traefik)
+    volumes:
+      - ./certs:/opt/janus/share/janus/certs:ro
 
     # Health check
