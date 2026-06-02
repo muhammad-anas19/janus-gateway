@@ -30,7 +30,7 @@ services:
     # Port mappings - CRITICAL: Ensure firewall allows these ports
     ports:
       # WebSocket (proxied through Traefik for WSS)
-      - "8188:8188"
+      - "80:8188"
       # RTP media ports (UDP) - MUST be open in firewall for audio to work
       - "20000-20100:20000-20100/udp"
       # SIP signaling
