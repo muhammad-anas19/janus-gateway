@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        PUBLIC_IP: "5.78.103.238"
+        PUBLIC_IP: "178.105.23.98"
     image: arcsip-janus-gateway:latest
     container_name: janus-gateway
     restart: unless-stopped
@@ -41,7 +41,7 @@ services:
     environment:
       - JANUS_DEBUG_LEVEL=4
       # CRITICAL: Your server's public IP for NAT traversal
-      - NAT_PUBLIC_IP=5.78.103.238
+      - NAT_PUBLIC_IP=178.105.23.98
 
     # Optional: Mount certs if using WSS directly (not through Traefik)
     volumes:

@@ -2,7 +2,7 @@
 FROM canyan/janus-gateway:latest
 
 # Your server's public IP
-ARG PUBLIC_IP=5.78.103.238
+ARG PUBLIC_IP=178.105.23.98
 
 # Copy config files to a temp location first, then find and copy to correct location at runtime
 COPY janus-config/ /tmp/janus-config/
@@ -11,7 +11,7 @@ COPY janus-config/ /tmp/janus-config/
 RUN echo '#!/bin/sh\n\
 set -e\n\
 \n\
-PUBLIC_IP="${NAT_PUBLIC_IP:-5.78.103.238}"\n\
+PUBLIC_IP="${NAT_PUBLIC_IP:-178.105.23.98}"\n\
 echo "Setting up Janus with public IP: $PUBLIC_IP"\n\
 \n\
 # Find janus config directory\n\

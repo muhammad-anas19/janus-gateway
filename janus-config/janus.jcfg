@@ -19,7 +19,7 @@ nat: {
     # CRITICAL: NAT 1:1 MAPPING - Your server's PUBLIC IP
     # ========================================================================
     # This is the public IP that browsers will use to reach Janus for RTP media
-    nat_1_1_mapping = "5.78.103.238"
+    nat_1_1_mapping = "178.105.23.98"
 
     # Don't include private IPs in ICE candidates (only advertise public IP)
     keep_private_host = false

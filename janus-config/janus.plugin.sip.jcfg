@@ -10,10 +10,10 @@ general: {
     # CRITICAL: Public IP for SDP and RTP - Must match your server's public IP
     # ========================================================================
     # This IP will be advertised in SDP for media connections
-    sdp_ip = "5.78.103.238"
+    sdp_ip = "178.105.23.98"
 
     # This IP will be used for RTP media streams
-    rtp_ip = "5.78.103.238"
+    rtp_ip = "178.105.23.98"
 }
 
 registration: {
