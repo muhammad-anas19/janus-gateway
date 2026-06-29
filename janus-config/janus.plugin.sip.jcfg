@@ -1,54 +1,37 @@
 general: {
-    local_media_server = true
-    json = "indented"
-    user_agent = "ARCSIP-Janus/1.0"
-    hold_sdp = true
-    behind_nat = true
-    register_ttl = 300
+    # NOTE: the SIP plugin only reads a 'general' section. Options such as
+    # codec lists, session timers, transport, retry policy and per-call
+    # direction are negotiated PER CALL via the Janus API, not here — the
+    # previous registration{}/sip{}/rtp{}/events{} blocks (and options like
+    # local_media_server, hold_sdp, rtp_ip) were silently ignored by Janus
+    # and have been removed.
 
-    # ========================================================================
-    # CRITICAL: Public IP for SDP and RTP - Must match your server's public IP
-    # ========================================================================
-    # This IP will be advertised in SDP for media connections
+    # Public IP advertised in the SDP toward the SIP peer (overridden at
+    # startup from NAT_PUBLIC_IP).
     sdp_ip = "5.78.103.238"
 
-    # This IP will be used for RTP media streams
-    rtp_ip = "5.78.103.238"
-}
+    # We are behind 1:1 NAT.
+    behind_nat = true
 
-registration: {
-    enabled = true
+    user_agent = "ARCSIP-Janus/1.0"
+
+    # Registration lifetime (seconds) and keep-alive to hold the registration
+    # and NAT binding open.
     register_ttl = 300
-    retry_on_failure = true
-    retry_interval = 30
-    retry_attempts = 5
-}
+    keepalive_interval = 60
 
-rtp: {
-    audio_codecs = "opus,pcmu,pcma,g722"
-    dtmf_mode = "rfc2833"
+    # ------------------------------------------------------------------------
+    # SIP-side (plain RTP/RTCP) media port range (~5k calls at 2 ports each).
+    # THIS is the valid option (a "min-max" string in 'general') — the old
+    # rtp{ rtp_port_min/max } block was ignored, so the SIP leg was using
+    # Janus's default ports. Kept DISJOINT from the WebRTC range (20000-32766),
+    # below the kernel ephemeral range, and must be open in the host firewall.
+    # ------------------------------------------------------------------------
+    rtp_port_range = "10000-19998"
 
-    # RTP port range for SIP plugin media (subset of main config)
-    rtp_port_min = 20000
-    rtp_port_max = 20100
+    # DSCP Expedited Forwarding marking on audio RTP for QoS where honoured.
+    dscp_audio_rtp = 46
 
-    # Audio direction settings
-    audiomedia_dir = "sendrecv"
-}
-
-sip: {
-    contact_user = "janus"
-    allow_transfer = true
-    session_timer = 90
-    session_refresher = "uac"
-    max_call_duration = 0
-    sip_transport = "udp"
-    local_port = 5060
-
-    # Register behind NAT - include rport in Via header
-    register_behind_nat = true
-}
-
-events: {
-    enable_events = true
+    # No event-handler plugins are loaded, so don't bother emitting events.
+    events = false
 }

@@ -1,19 +1,26 @@
 general: {
-    json = "indented"
+    json = "compact"
 
     # Enable WebSocket server (required!)
     ws = true
     ws_port = 8188
     ws_ip = "0.0.0.0"
 
-    # Disable secure WebSocket (Traefik handles TLS termination)
+    # Disable secure WebSocket (Traefik terminates TLS).
     wss = false
 
+    # Reap half-dead WebSocket connections so stale sessions don't accumulate
+    # under high connection churn: send a PING after this many seconds of
+    # inactivity, and close the socket if no PONG arrives within the timeout.
+    pingpong_trigger = 30
+    pingpong_timeout = 10
+
     # Logging
-    ws_logging = "err,warn"
+    ws_logging = "err"
 }
 
-# CORS - Allow your frontend domains
+# CORS - lock this to your actual frontend origin(s) in production instead of
+# "*" (e.g. allow_origin = "https://app.arcsip.io").
 cors: {
     allow_origin = "*"
 }

@@ -2,7 +2,6 @@ version: "3.8"
 
 services:
   janus-gateway:
-    # Build from custom Dockerfile instead of using pre-built image
     build:
       context: .
       dockerfile: Dockerfile
@@ -11,40 +10,69 @@ services:
     image: arcsip-janus-gateway:latest
     container_name: janus-gateway
     restart: unless-stopped
+
+    # ------------------------------------------------------------------------
+    # HOST NETWORKING — a media server should not sit behind docker-proxy.
+    # Publishing tens of thousands of UDP ports through the userland proxy is
+    # extremely heavy; host networking binds Janus directly to the host NIC and
+    # removes per-packet NAT overhead, so the large RTP ranges below are usable.
+    #
+    # Consequences to handle in the host firewall (Hetzner):
+    #   * 8188/tcp (WebSocket) is now bound on the host's PUBLIC IP in plaintext.
+    #     Traefik terminates TLS in front of it, so BLOCK 8188 from the public
+    #     internet and allow it only from the Traefik/host loopback.
+    #   * 5060/udp+tcp (SIP) — restrict to the PortaOne/PortaSIP source IPs.
+    #   * 10000-19998/udp (SIP-side RTP) and 20000-32766/udp (WebRTC RTP) — OPEN.
+    # Media ranges are kept below 32768 to avoid colliding with the kernel
+    # ephemeral range. If you ever widen them past 32768, also shrink
+    # net.ipv4.ip_local_port_range on the host accordingly.
+    #
+    # NOTE: with host networking, `ports:` is ignored and removed. Traefik must
+    # be able to reach 8188 on the host (via the docker bridge gateway / host
+    # IP). VERIFY WSS routing immediately after switching — if signalling
+    # breaks, the WS path, not the media path, is the thing to fix.
+    # ------------------------------------------------------------------------
+    network_mode: host
+
+    # Traefik (TLS termination + WSS) — unchanged. See note above re: host net.
     labels:
         - "traefik.enable=true"
-        # Router configuration - HTTPS only
         - "traefik.http.routers.janus-gateway.rule=Host(`janus-gateway.coolify.arcsip.io`)"
         - "traefik.http.routers.janus-gateway.entrypoints=https"
         - "traefik.http.routers.janus-gateway.tls=true"
         - "traefik.http.routers.janus-gateway.tls.certresolver=letsencrypt"
-        # Service configuration
         - "traefik.http.services.janus-gateway.loadbalancer.server.port=8188"
-        # HTTP to HTTPS redirect
         - "traefik.http.routers.janus-gateway-http.rule=Host(`janus-gateway.coolify.arcsip.io`)"
         - "traefik.http.routers.janus-gateway-http.entrypoints=http"
         - "traefik.http.routers.janus-gateway-http.middlewares=redirect-to-https"
         - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
         - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
 
-    # Port mappings - CRITICAL: Ensure firewall allows these ports
-    ports:
-      # WebSocket (proxied through Traefik for WSS)
-      - "8188:8188"
-      # RTP media ports (UDP) - MUST be open in firewall for audio to work
-      - "20000-20100:20000-20100/udp"
-      # SIP signaling
-      - "5060:5060/udp"
-      - "5060:5060/tcp"
-
-    # Environment variables
     environment:
-      - JANUS_DEBUG_LEVEL=4
-      # CRITICAL: Your server's public IP for NAT traversal
+      # Consumed by docker-entrypoint.sh:
       - NAT_PUBLIC_IP=5.78.103.238
+      - JANUS_DEBUG_LEVEL=4
+      # Pin the event-loop thread count; if unset the entrypoint uses nproc.
+      # - JANUS_EVENT_LOOPS=8
 
-    # Optional: Mount certs if using WSS directly (not through Traefik)
+    # High concurrent-call counts need a very high open-file-descriptor limit
+    # (each call = several sockets/fds). The host kernel fs.file-max must also
+    # be large enough (see sysctl notes in the handoff).
+    ulimits:
+      nofile:
+        soft: 1048576
+        hard: 1048576
+
+    # Liveness: confirm the WebSocket port is accepting connections.
+    # (Uses bash /dev/tcp; verify it reports healthy on first deploy and adjust
+    # the probe if the base image lacks bash.)
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 3 bash -c '</dev/tcp/127.0.0.1/8188' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+    # Optional: certs only needed if terminating WSS in Janus instead of Traefik.
     volumes:
       - ./certs:/opt/janus/share/janus/certs:ro
-
-    # Health check

@@ -1,0 +1,8 @@
+# Files consumed inside Linux containers MUST use LF line endings regardless
+# of the host OS — CRLF would break the shell shebang and libconfig parsing.
+*.sh         text eol=lf
+*.jcfg       text eol=lf
+*.yml        text eol=lf
+*.yaml       text eol=lf
+Dockerfile   text eol=lf
+.gitattributes text eol=lf

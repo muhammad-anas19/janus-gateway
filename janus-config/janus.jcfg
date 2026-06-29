@@ -1,30 +1,52 @@
 general: {
+    # ------------------------------------------------------------------------
+    # Performance / scalability
+    # ------------------------------------------------------------------------
+    # Number of static event-loop threads handles are distributed across.
+    # The entrypoint overrides this at startup with the host vCPU count
+    # (nproc); set JANUS_EVENT_LOOPS in the environment to pin it explicitly.
+    # With many concurrent sessions this avoids one-thread-per-handle churn.
+    event_loops = 4
+
     session_timeout = 60
     reclaim_session_timeout = 30
+
+    # Logging. debug_level is overridden at startup by JANUS_DEBUG_LEVEL.
+    # 4 = info. For maximum throughput under heavy traffic use 3 (warn) — at
+    # high call churn level-4 stdout logging is a real IO cost.
     debug_level = 4
+    debug_timestamps = true
+    debug_colors = false
     debug_stdout = true
 }
 
 media: {
     ipv6 = false
-    rtp_port_range = "20000-20100"
+
+    # ------------------------------------------------------------------------
+    # WebRTC media (browser <-> Janus) RTP/RTCP port range (~12.7k ports).
+    # Audio-only + rtcp-mux ~= 1 UDP port per call. This range MUST be open in
+    # the host firewall. Kept DISJOINT from the SIP-side range (10000-19998 in
+    # janus.plugin.sip.jcfg) so the two media paths never contend for a port.
+    # Kept BELOW 32768 to stay out of the kernel's default ephemeral range
+    # (net.ipv4.ip_local_port_range, 32768-60999) and avoid bind() collisions.
+    # ------------------------------------------------------------------------
+    rtp_port_range = "20000-32766"
 }
 
 nat: {
-    # STUN server for ICE candidate gathering
-    stun_server = "stun.l.google.com"
-    stun_port = 19302
-
     # ========================================================================
-    # CRITICAL: NAT 1:1 MAPPING - Your server's PUBLIC IP
+    # CRITICAL: NAT 1:1 MAPPING - server's PUBLIC IP (overridden at startup
+    # from NAT_PUBLIC_IP). Required because the host NIC sees a private IP
+    # behind 1:1 NAT; this is the address advertised in ICE candidates.
     # ========================================================================
-    # This is the public IP that browsers will use to reach Janus for RTP media
     nat_1_1_mapping = "5.78.103.238"
 
-    # Don't include private IPs in ICE candidates (only advertise public IP)
+    # Advertise only the public IP, not the unreachable private/host IP.
     keep_private_host = false
 
-    # ICE-Lite mode - Janus acts as ICE-Lite agent (server-side)
+    # ICE-Lite: Janus is the controlled agent with a single static host
+    # candidate (the public IP above).
     ice_lite = true
 
     # Half-trickle (full_trickle = false): embed the ICE candidate directly in
@@ -35,14 +57,24 @@ nat: {
     # callee browser with no remote candidate so ICE never started.
     full_trickle = false
 
-    # Ignore Docker's internal network interfaces
+    # Drop remote .local mDNS candidates instead of trying (and failing) to
+    # resolve them in the container.
+    ignore_mdns = true
+
+    # No STUN: an ICE-Lite agent does not gather server-reflexive candidates,
+    # so a STUN server is unused. Removing it also avoids a startup DNS lookup.
+
+    # Ignore container/virtual interfaces when gathering candidates.
     ice_ignore_list = "docker0,br-,veth,lo"
 }
 
 plugins: {
-    # Only enable needed plugins
+    # Only the SIP plugin is used. Disabling the rest cuts memory, startup
+    # time and attack surface. (Listing a plugin that isn't built is harmless.)
+    disable = "libjanus_videoroom.so,libjanus_audiobridge.so,libjanus_streaming.so,libjanus_videocall.so,libjanus_voicemail.so,libjanus_textroom.so,libjanus_recordplay.so,libjanus_echotest.so,libjanus_nosip.so,libjanus_duktape.so,libjanus_lua.so"
 }
 
 transports: {
-    # WebSocket transport is enabled separately
+    # Only the WebSocket transport is used. HTTP/Unix-socket/etc. disabled.
+    disable = "libjanus_http.so,libjanus_pfunix.so,libjanus_rabbitmq.so,libjanus_mqtt.so,libjanus_nanomsg.so"
 }
