@@ -27,8 +27,13 @@ nat: {
     # ICE-Lite mode - Janus acts as ICE-Lite agent (server-side)
     ice_lite = true
 
-    # Full trickle for better ICE connectivity
-    full_trickle = true
+    # Half-trickle (full_trickle = false): embed the ICE candidate directly in
+    # the SDP instead of trickling it separately. REQUIRED for ice_lite, where
+    # there is a single static host candidate. With full_trickle = true Janus
+    # OMITS the candidate from the SDP and trickles it; on the offerer leg
+    # (inbound SIP -> WebRTC agent) that trickle was being lost, leaving the
+    # callee browser with no remote candidate so ICE never started.
+    full_trickle = false
 
     # Ignore Docker's internal network interfaces
     ice_ignore_list = "docker0,br-,veth,lo"
