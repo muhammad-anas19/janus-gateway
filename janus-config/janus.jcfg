@@ -24,14 +24,17 @@ media: {
     ipv6 = false
 
     # ------------------------------------------------------------------------
-    # WebRTC media (browser <-> Janus) RTP/RTCP port range (~12.7k ports).
-    # Audio-only + rtcp-mux ~= 1 UDP port per call. This range MUST be open in
-    # the host firewall. Kept DISJOINT from the SIP-side range (10000-19998 in
-    # janus.plugin.sip.jcfg) so the two media paths never contend for a port.
-    # Kept BELOW 32768 to stay out of the kernel's default ephemeral range
-    # (net.ipv4.ip_local_port_range, 32768-60999) and avoid bind() collisions.
+    # WebRTC media (browser <-> Janus) RTP/RTCP port range.
+    # Audio-only + rtcp-mux ~= 1 UDP port per call, so this NARROW window of
+    # 201 ports = ~200 concurrent calls -- deliberately small so the ENTIRE
+    # range can be trivially and fully opened in the Hetzner Cloud Firewall
+    # (UDP 20000-20200 inbound). A partially-open range is what makes ICE
+    # succeed for some calls and fail (call drops ~20s later) for others.
+    # Widen this back toward 32766 ONLY after confirming the firewall opens the
+    # whole range. Kept DISJOINT from the SIP-side range (10000-19998 in
+    # janus.plugin.sip.jcfg) and BELOW the kernel ephemeral range (32768+).
     # ------------------------------------------------------------------------
-    rtp_port_range = "20000-32766"
+    rtp_port_range = "20000-20200"
 }
 
 nat: {
