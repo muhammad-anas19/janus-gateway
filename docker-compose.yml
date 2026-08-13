@@ -22,7 +22,12 @@ services:
     #     Traefik terminates TLS in front of it, so BLOCK 8188 from the public
     #     internet and allow it only from the Traefik/host loopback.
     #   * 5060/udp+tcp (SIP) — restrict to the PortaOne/PortaSIP source IPs.
-    #   * 10000-19998/udp (SIP-side RTP) and 20000-32766/udp (WebRTC RTP) — OPEN.
+    #   * 10000-19998/udp (SIP-side RTP) and 20000-20200/udp (WebRTC RTP) — OPEN.
+    #     The WebRTC range is the one in janus.jcfg (`media.rtp_port_range`) and
+    #     THE WHOLE of it must be open: a partially-open range makes ICE succeed
+    #     for some calls and fail for others. Read that file's comment before
+    #     changing either number here — conferencing spends this range faster
+    #     than plain calls do (2P + 1 peer connections for a P-party conference).
     # Media ranges are kept below 32768 to avoid colliding with the kernel
     # ephemeral range. If you ever widen them past 32768, also shrink
     # net.ipv4.ip_local_port_range on the host accordingly.

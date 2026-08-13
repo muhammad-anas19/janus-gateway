@@ -1,0 +1,58 @@
+general: {
+    # ========================================================================
+    # AudioBridge — the dialer's conference mixer.
+    #
+    # HOW IT IS USED
+    #   The dialer creates ONE room per conference, at runtime, and destroys it
+    #   when the conference ends. Every participant is a WebRTC peer connection
+    #   from the agent's browser: one per SIP leg (publishing what that leg is
+    #   receiving) plus one for the agent's microphone. Each participant is sent
+    #   the mix of every OTHER participant, and the browser writes the mix it
+    #   gets for a leg back onto that leg. So the mixing is this plugin's and the
+    #   relaying is the browser's — Janus's SIP plugin has no way to join a call
+    #   into a conference, and there is no server-side component that could.
+    #
+    #   See arcsip_new_mvp/docs/sip-integration.md#conference-janus-audiobridge.
+    #
+    # WHY THIS FILE EXISTS AT ALL
+    #   Janus falls back to built-in defaults when a plugin config is missing,
+    #   and the config the base image ships is the upstream SAMPLE — which
+    #   defines a public demo room (1234, "Demo Room", no PIN). We ship our own
+    #   so the plugin's behaviour is ours and not the sample's, and so there is
+    #   ONE place that records why each value is what it is.
+    #
+    #   Rooms are deliberately NOT declared here: they are per-conference and
+    #   ephemeral, created over the API with `permanent = false`. A static room
+    #   would be a shared room every agent's conference landed in.
+    # ========================================================================
+
+    # ------------------------------------------------------------------------
+    # No `admin_key`.
+    #
+    # An admin key would restrict room CREATION to clients that hold it — and
+    # the only client here is the agent's browser, which would have to be shipped
+    # the key as a NEXT_PUBLIC_* variable. A secret in a public JS bundle is not
+    # a secret, so it would buy no protection while adding a value that has to
+    # match in two repos to deploy.
+    #
+    # It also would not be gating a new privilege: any browser that can reach
+    # this WebSocket can already REGISTER and place SIP calls through the SIP
+    # plugin. The control that matters is the one already in place — 8188 is
+    # blocked from the public internet and reachable only through Traefik.
+    #
+    # The dialer DOES support one (NEXT_PUBLIC_JANUS_AUDIOBRIDGE_ADMIN_KEY) for
+    # deployments that set it; ours does not, and the dialer omits the field
+    # entirely then, because Janus rejects an admin_key it was not configured
+    # with.
+    # ------------------------------------------------------------------------
+
+    # Numeric room IDs. NOT cosmetic and NOT a default to leave implicit: with
+    # string_ids = true Janus returns a string id from `create`, and the dialer
+    # reads that id as a number to echo back on every join. Pinned here so a
+    # future edit has to notice the client contract.
+    string_ids = false
+
+    # No event-handler plugins are loaded, so don't bother emitting events.
+    # Matches janus.plugin.sip.jcfg.
+    events = false
+}

@@ -25,13 +25,25 @@ media: {
 
     # ------------------------------------------------------------------------
     # WebRTC media (browser <-> Janus) RTP/RTCP port range.
-    # Audio-only + rtcp-mux ~= 1 UDP port per call, so this NARROW window of
-    # 201 ports = ~200 concurrent calls -- deliberately small so the ENTIRE
-    # range can be trivially and fully opened in the Hetzner Cloud Firewall
-    # (UDP 20000-20200 inbound). A partially-open range is what makes ICE
-    # succeed for some calls and fail (call drops ~20s later) for others.
+    #
+    # Audio-only + rtcp-mux ~= 1 UDP port per PEER CONNECTION, so this NARROW
+    # window of 201 ports = ~200 concurrent peer connections -- deliberately
+    # small so the ENTIRE range can be trivially and fully opened in the Hetzner
+    # Cloud Firewall (UDP 20000-20200 inbound). A partially-open range is what
+    # makes ICE succeed for some calls and fail (call drops ~20s later) for
+    # others.
+    #
+    # NOTE the unit: PEER CONNECTIONS, not calls. That used to be the same
+    # number; with conferencing it is not. A conference of P remote participants
+    # costs 2P + 1 peer connections on this range -- P for the SIP legs, plus
+    # P + 1 AudioBridge participants (one per leg, one for the agent). So one
+    # agent in a full 5-party conference holds 11 ports where five calls used to
+    # hold 5. Budget from the peer-connection count, not the call count.
+    #
     # Widen this back toward 32766 ONLY after confirming the firewall opens the
-    # whole range. Kept DISJOINT from the SIP-side range (10000-19998 in
+    # whole range -- do NOT widen it to buy conference headroom while the
+    # firewall still stops at 20200, which is precisely the partially-open case
+    # above. Kept DISJOINT from the SIP-side range (10000-19998 in
     # janus.plugin.sip.jcfg) and BELOW the kernel ephemeral range (32768+).
     # ------------------------------------------------------------------------
     rtp_port_range = "20000-20200"
@@ -72,9 +84,27 @@ nat: {
 }
 
 plugins: {
-    # Only the SIP plugin is used. Disabling the rest cuts memory, startup
-    # time and attack surface. (Listing a plugin that isn't built is harmless.)
-    disable = "libjanus_videoroom.so,libjanus_audiobridge.so,libjanus_streaming.so,libjanus_videocall.so,libjanus_voicemail.so,libjanus_textroom.so,libjanus_recordplay.so,libjanus_echotest.so,libjanus_nosip.so,libjanus_duktape.so,libjanus_lua.so"
+    # Two plugins are used, and ONLY two:
+    #
+    #   janus.plugin.sip         — every call leg (browser <-> Janus <-> PortaSIP).
+    #   janus.plugin.audiobridge — the conference mixer.
+    #
+    # AudioBridge is REQUIRED for the dialer's conference feature and was
+    # previously disabled here. The dialer publishes each SIP leg into an
+    # AudioBridge room as its own participant and writes the mix the room returns
+    # for it (everyone except that party) back onto that leg — so the mixing is
+    # the plugin's and the relaying is the browser's. With this disabled, the
+    # dialer's first `attach` for a conference fails with "No such plugin" and
+    # nothing about conferencing works. See janus.plugin.audiobridge.jcfg, and
+    # arcsip_new_mvp/docs/sip-integration.md#conference-janus-audiobridge.
+    #
+    # AudioBridge needs libopus at BUILD time. Confirm on first deploy that the
+    # base image actually shipped it — the startup log must contain
+    # "JANUS AudioBridge plugin initialised".
+    #
+    # Everything else stays off: it cuts memory, startup time and attack surface.
+    # (Listing a plugin that isn't built is harmless.)
+    disable = "libjanus_videoroom.so,libjanus_streaming.so,libjanus_videocall.so,libjanus_voicemail.so,libjanus_textroom.so,libjanus_recordplay.so,libjanus_echotest.so,libjanus_nosip.so,libjanus_duktape.so,libjanus_lua.so"
 }
 
 transports: {
