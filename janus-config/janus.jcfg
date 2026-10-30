@@ -8,7 +8,13 @@ general: {
     # With many concurrent sessions this avoids one-thread-per-handle churn.
     event_loops = 4
 
-    session_timeout = 60
+    # The dialer keeps its session alive every 30 s, but Chrome throttles a tab
+    # hidden for 5+ minutes to one timer wake-up a minute, so at 60 an agent
+    # working in another tab lost the session (and its SIP registration) and
+    # missed calls until they came back. 180 covers the throttled cadence; a
+    # closed tab's session still ends once its WebSocket closes (after the
+    # reclaim window below).
+    session_timeout = 180
     reclaim_session_timeout = 30
 
     # Logging. debug_level is overridden at startup by JANUS_DEBUG_LEVEL.

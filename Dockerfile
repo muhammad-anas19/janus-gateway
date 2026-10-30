@@ -1,10 +1,10 @@
 # Custom Janus Gateway image for the ARCSIP SIP <-> WebRTC media gateway.
 #
-# NOTE: pin the base image to a digest for reproducible production builds, e.g.
-#   FROM canyan/janus-gateway@sha256:<digest>
-# `:latest` is non-reproducible — a rebuild can silently change the Janus
-# version. Pin once you've validated a specific tag/digest.
-FROM canyan/janus-gateway:latest
+# Pinned to the digest `canyan/janus-gateway:latest` has pointed at since
+# 2023-05-20: Janus 1.1.4, SIP plugin 0.0.8 — what the gateway runs today. The
+# dialer is written against this version's event shapes (e.g. `call_id` beside
+# the SIP `result`), so moving Janus is a dialer change, not just a rebuild.
+FROM canyan/janus-gateway@sha256:80970d0b1c407222e2f88d7a6d31a16686fb9a5145a491b4b4d843ee40ee4ce1
 
 # Default public IP, baked in as the NAT_PUBLIC_IP default. Override at deploy
 # time with the NAT_PUBLIC_IP environment variable (see docker-compose.yml).
